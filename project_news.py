@@ -15,13 +15,14 @@ def connect(database_name):
         print ("Unable to connect to database")
         sys.exit(1)
 
-db = connect("news")
-c = db.cursor()
-
 
 def execute_query(query):
+    """ execute the query """
+    db = connect("news")
+    c = db.cursor()
     c.execute(query)
     posts = c.fetchall()
+    db.close()
     return posts
 
 
@@ -46,14 +47,12 @@ def print_top_articles():
 # second question
 def print_top_authors():
     """Prints a list of authors ranked by article views."""
-    query = """SELECT authors.name, sum(tiger.num) as views from authors,
-              (SELECT Substring(path, 10) as paths, COUNT(*) as num FROM log
-              GROUP BY path ORDER BY num desc
-              LIMIT 10 OFFSET 1) as tiger
-              join
-              (SELECT author, slug from articles) as lion
-              on tiger.paths = lion.slug
-              where authors.id = lion.author
+    query = """SELECT authors.name, sum(total.num) as views from authors,
+              (SELECT path, COUNT(*) as num FROM log
+              GROUP BY path ORDER BY num desc) as total
+              join articles
+              on total.path = concat('/article/', articles.slug)
+              where authors.id = articles.author
               group by authors.name order by views desc;"""
     results = execute_query(query)
     # add code to print results
@@ -78,11 +77,10 @@ def print_errors_over_one():
     print
     print "On which days did more than 1% of requests lead to errors?"
     for result in results:
-        if result[1] > 2:
+        if result[1] > 1:
             print result[0], "--", round(result[1], 2), "%" + " error"
 
 if __name__ == '__main__':
     print_top_articles()
     print_top_authors()
     print_errors_over_one()
-    db.close()

@@ -1,6 +1,8 @@
 # Project-news
 
-This project is about extracting data from news database using sql statements
+This project is about extracting data from news-database.
+By using library psycopg2 in project_news.py(python file) we connect the
+database file and extract data from it using sql statement
 
 ## Content
 1) project_news.py
